@@ -32,7 +32,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return;
     }
 
-    const newSocket: AppSocket = io('http://localhost:4000', {
+    const newSocket: AppSocket = io((import.meta as any).env.VITE_API_URL || '', {
       withCredentials: true,
       transports: ['websocket'],
     });

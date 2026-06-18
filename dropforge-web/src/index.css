@@ -3,166 +3,161 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-heading: 'Outfit', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Roboto Flex', ui-sans-serif, system-ui, sans-serif;
+  --font-heading: 'Roboto Flex', ui-sans-serif, system-ui, sans-serif;
 
-  /* Sleek Dark Mode & Vibrant Light Mode */
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  /* Neutrals */
+  --color-neutral-primary-soft: var(--neutral-primary-soft);
+  --color-neutral-primary: var(--neutral-primary);
+  --color-neutral-primary-medium: var(--neutral-primary-medium);
+  --color-neutral-secondary-soft: var(--neutral-secondary-soft);
+  --color-neutral-secondary-medium: var(--neutral-secondary-medium);
+  --color-neutral-tertiary-soft: var(--neutral-tertiary-soft);
+  --color-neutral-tertiary-medium: var(--neutral-tertiary-medium);
 
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
+  /* Brand */
+  --color-brand-softer: var(--brand-softer);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand: var(--brand);
+  --color-brand-medium: var(--brand-medium);
+  --color-brand-strong: var(--brand-strong);
 
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
+  /* Status */
+  --color-success-soft: var(--success-soft);
+  --color-success: var(--success);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger: var(--danger);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning: var(--warning);
 
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
+  /* Text */
+  --color-heading: var(--heading);
+  --color-body: var(--body);
+  --color-body-subtle: var(--body-subtle);
+  --color-fg-brand: var(--fg-brand);
+  --color-fg-brand-strong: var(--fg-brand-strong);
+  --color-fg-danger-strong: var(--fg-danger-strong);
+  --color-fg-success-strong: var(--fg-success-strong);
+  --color-fg-warning: var(--fg-warning);
 
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
+  /* Borders */
+  --color-border-default: var(--border-default);
+  --color-border-default-medium: var(--border-default-medium);
+  --color-border-brand: var(--border-brand);
 
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
+  /* Shadows */
+  --shadow-2xs: 0 1px 1px rgb(0 0 0 / 0.03), 0 1px 2px rgb(0 0 0 / 0.06);
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.04);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.08), 0 2px 6px -1px rgb(0 0 0 / 0.06);
+  --shadow-md: 0 2px 6px -1px rgb(0 0 0 / 0.08), 0 6px 16px -2px rgb(0 0 0 / 0.06);
+  --shadow-lg: 0 8px 20px -4px rgb(0 0 0 / 0.08), 0 4px 12px -2px rgb(0 0 0 / 0.04);
+  --shadow-xl: 0 16px 32px -8px rgb(0 0 0 / 0.1), 0 8px 16px -4px rgb(0 0 0 / 0.06);
+  --shadow-2xl: 0 24px 48px -12px rgb(0 0 0 / 0.15);
 
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-default: 8px;
+  --radius-base: 12px;
+  --radius-full: 9999px;
+  
+  --radius-lg: 12px;
+  --radius-md: 8px;
 
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
-
-  --animate-accordion-down: accordion-down 0.2s ease-out;
-  --animate-accordion-up: accordion-up 0.2s ease-out;
-  --animate-fade-in: fade-in 0.5s ease-out;
-  --animate-slide-up: slide-up 0.5s ease-out;
-
-  @keyframes accordion-down {
-    from {
-      height: 0;
-    }
-    to {
-      height: var(--radix-accordion-content-height);
-    }
-  }
-  @keyframes accordion-up {
-    from {
-      height: var(--radix-accordion-content-height);
-    }
-    to {
-      height: 0;
-    }
-  }
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-  @keyframes slide-up {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-}
-
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-*/
-@layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
-  }
+  /* Shadcn Map */
+  --color-background: var(--neutral-primary-soft);
+  --color-foreground: var(--body);
+  --color-card: var(--neutral-primary-soft);
+  --color-card-foreground: var(--body);
+  --color-popover: var(--neutral-primary);
+  --color-popover-foreground: var(--body);
+  --color-primary: var(--brand);
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: var(--neutral-secondary-medium);
+  --color-secondary-foreground: var(--heading);
+  --color-muted: var(--neutral-secondary-soft);
+  --color-muted-foreground: var(--body-subtle);
+  --color-accent: var(--neutral-secondary-medium);
+  --color-accent-foreground: var(--heading);
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: #FFFFFF;
+  --color-border: var(--border-default);
+  --color-input: var(--border-default-medium);
+  --color-ring: var(--brand-medium);
 }
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 220 20% 15%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 220 20% 15%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 15%;
-
-    /* Vibrant Cyan for Light Mode */
-    --primary: 190 90% 40%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 220 10% 95%;
-    --secondary-foreground: 220 20% 15%;
-
-    --muted: 220 10% 95%;
-    --muted-foreground: 220 15% 45%;
-
-    --accent: 220 10% 95%;
-    --accent-foreground: 220 20% 15%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 220 10% 90%;
-    --input: 220 10% 90%;
-    --ring: 190 90% 40%;
-
-    --radius: 0.75rem;
+    --neutral-primary-soft: #FFFBFE;
+    --neutral-primary: #FFFFFF;
+    --neutral-primary-medium: #FFFBFE;
+    --neutral-secondary-soft: #F7F2FA;
+    --neutral-secondary-medium: #F3EDF7;
+    --neutral-tertiary-soft: #ECE6F0;
+    --neutral-tertiary-medium: #ECE6F0;
+    
+    --brand-softer: #F6EDFF;
+    --brand-soft: #EADDFF;
+    --brand: #675496;
+    --brand-medium: #D0BCFF;
+    --brand-strong: #4F378B;
+    
+    --success-soft: #E8F5E9;
+    --success: #2E7D32;
+    --danger-soft: #F9DEDC;
+    --danger: #B3261E;
+    --warning-soft: #FFF3E0;
+    --warning: #E65100;
+    
+    --heading: #1D1B20;
+    --body: #49454F;
+    --body-subtle: #79747E;
+    --fg-brand: #675496;
+    --fg-brand-strong: #21005D;
+    --fg-danger-strong: #8C1D18;
+    --fg-success-strong: #1B5E20;
+    --fg-warning: #BF360C;
+    
+    --border-default: #E7E0EC;
+    --border-default-medium: #CAC4D0;
+    --border-brand: #675496;
   }
 
   .dark {
-    /* Sleek Midnight Slate for Dark Mode */
-    --background: 222 47% 7%;
-    --foreground: 210 40% 98%;
-
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
-
-    /* Neon Cyan/Blue */
-    --primary: 190 90% 60%;
-    --primary-foreground: 222 47% 7%;
-
-    --secondary: 217 32% 17%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217 32% 17%;
-    --muted-foreground: 215 20% 65%;
-
-    --accent: 217 32% 17%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217 32% 17%;
-    --input: 217 32% 17%;
-    --ring: 190 90% 60%;
+    --neutral-primary-soft: #1D1B20;
+    --neutral-primary: #141218;
+    --neutral-primary-medium: #2B2930;
+    --neutral-secondary-soft: #1D1B20;
+    --neutral-secondary-medium: #2B2930;
+    --neutral-tertiary-soft: #1D1B20;
+    --neutral-tertiary-medium: #36343B;
+    
+    --brand-softer: #2D1F5E;
+    --brand-soft: #4F378B;
+    --brand: #D0BCFF;
+    --brand-medium: #4F378B;
+    --brand-strong: #675496;
+    
+    --success-soft: #002114;
+    --success: #66BB6A;
+    --danger-soft: #410002;
+    --danger: #F2B8B5;
+    --warning-soft: #4E2600;
+    --warning: #FFB74D;
+    
+    --heading: #E6E0E4;
+    --body: #CAC4D0;
+    --body-subtle: #938F99;
+    --fg-brand: #D0BCFF;
+    --fg-brand-strong: #EADDFF;
+    --fg-danger-strong: #FFB4AB;
+    --fg-success-strong: #66BB6A;
+    --fg-warning: #FFCC80;
+    
+    --border-default: #2B2930;
+    --border-default-medium: #49454F;
+    --border-brand: #D0BCFF;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
@@ -170,22 +165,7 @@
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-
-  /* Custom Typography */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-heading);
+    @apply text-heading font-medium;
   }
 }
-
-/* Glassmorphism Utilities */
-@layer utilities {
-  .glass {
-    @apply bg-background/60 backdrop-blur-xl border border-border/50 shadow-sm;
-  }
-  .glass-card {
-    @apply bg-card/60 backdrop-blur-lg border border-border/40 hover:border-primary/50 transition-all duration-300;
-  }
-}
-
-/* App.css original styles to keep but refactored to look better or can be removed */
-/* I will clear out the App.css and use only Tailwind classes in the files */

@@ -1,4 +1,5 @@
 import swaggerJsdoc from 'swagger-jsdoc';
+import { env } from '@config/env';
 
 const options: swaggerJsdoc.Options = {
   definition: {
@@ -9,7 +10,7 @@ const options: swaggerJsdoc.Options = {
       description:
         'Enterprise-grade real-time inventory reservation platform for high-concurrency merch and sneaker drops.',
     },
-    servers: [{ url: 'http://localhost:4000', description: 'Development server' }],
+    servers: [{ url: `http://localhost:${env.PORT}`, description: 'Development server' }],
     components: {
       securitySchemes: {
         bearerAuth: {

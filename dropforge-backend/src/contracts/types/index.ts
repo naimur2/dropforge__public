@@ -1,6 +1,11 @@
 export interface ApiResponse<T> {
   success: true;
   data: T;
+  meta?: {
+    total: number;
+    page: number;
+    limit: number;
+  };
 }
 
 export interface ApiErrorResponse {

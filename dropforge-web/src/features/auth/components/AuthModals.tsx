@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, EyeOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,36 +15,49 @@ interface AuthModalsProps {
   trigger: React.ReactElement;
 }
 
+const loginSchema = z.object({
+  email: z.string().min(1, 'Email is required').email('Valid email is required'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+
+const registerSchema = loginSchema.extend({
+  username: z.string().min(3, 'Username must be at least 3 characters'),
+});
+
 export function AuthModals({ defaultMode = 'login', trigger }: AuthModalsProps) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<'login' | 'register'>(defaultMode);
 
-  // Form State
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  // Form setup
+  const {
+    register: formRegister,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(mode === 'login' ? loginSchema : registerSchema) as any,
+    defaultValues: { email: '', password: '', username: '' }
+  });
 
   // API Hooks
   const [login, { isLoading: isLoggingIn }] = useLoginMutation();
-  const [register, { isLoading: isRegistering }] = useRegisterMutation();
+  const [registerAction, { isLoading: isRegistering }] = useRegisterMutation();
 
   const isLoading = isLoggingIn || isRegistering;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: any) => {
     try {
       if (mode === 'login') {
-        await login({ email, password }).unwrap();
+        await login({ email: data.email, password: data.password }).unwrap();
         toast.success('Successfully logged in!');
       } else {
-        await register({ username, email, password }).unwrap();
+        await registerAction({ username: data.username!, email: data.email, password: data.password }).unwrap();
         toast.success('Account created! Welcome to DropForge.');
       }
       setOpen(false);
-      // Reset form
-      setUsername('');
-      setEmail('');
-      setPassword('');
+      reset();
     } catch (err: any) {
       toast.error(err?.data?.message || 'Authentication failed. Please try again.');
     }
@@ -49,75 +66,80 @@ export function AuthModals({ defaultMode = 'login', trigger }: AuthModalsProps) 
   return (
     <Dialog open={open} onOpenChange={(val) => { setOpen(val); if (val) setMode(defaultMode); }}>
       <DialogTrigger render={trigger} />
-      <DialogContent className="sm:max-w-md glass border-border/40 shadow-2xl overflow-hidden rounded-[2rem]">
-        {/* Decorative background glow inside modal */}
-        <div className="absolute -top-32 -left-32 w-64 h-64 bg-primary/20 blur-[80px] rounded-full mix-blend-screen pointer-events-none opacity-50" />
-        <div className="absolute -bottom-32 -right-32 w-64 h-64 bg-purple-500/20 blur-[80px] rounded-full mix-blend-screen pointer-events-none opacity-50" />
-        
-        <DialogHeader className="relative z-10 pt-4">
-          <DialogTitle className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-linear-to-br from-foreground to-foreground/70">
+      <DialogContent className="sm:max-w-md bg-popover border border-border shadow-xl overflow-hidden rounded-[28px] p-[24px]">
+        <DialogHeader className="relative z-10 pt-2">
+          <DialogTitle className="text-[24px] font-medium leading-[1.33] text-heading">
             {mode === 'login' ? 'Welcome Back' : 'Create Account'}
           </DialogTitle>
-          <DialogDescription className="text-base mt-2">
+          <DialogDescription className="text-[14px] leading-[1.4] text-body mt-2">
             {mode === 'login' 
               ? 'Enter your credentials to access your account.' 
               : 'Join DropForge to reserve exclusive limited-edition drops.'}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5 py-6 relative z-10">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-[16px] py-4 relative z-10">
           {mode === 'register' && (
-            <div className="space-y-2.5">
-              <Label htmlFor="username" className="font-semibold text-muted-foreground ml-1">Username</Label>
+            <div className="space-y-1">
+              <Label htmlFor="username" className="text-[12px] font-medium tracking-[0.4px] text-body-subtle ml-1">Username</Label>
               <Input
                 id="username"
                 placeholder="hypebeast99"
-                required
                 disabled={isLoading}
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="h-12 bg-background/50 border-border/50 focus-visible:ring-primary/50 focus-visible:border-primary/50 rounded-xl transition-all"
+                {...formRegister('username')}
+                className={`bg-secondary text-heading text-[16px] border-transparent hover:border-input focus-visible:ring-0 focus-visible:border-primary rounded-[12px] px-[16px] py-[12px] h-auto transition-all ${errors.username ? 'border-red-500 focus-visible:border-red-500' : ''}`}
               />
+              {errors.username && <p className="text-red-500 text-[12px] ml-1">{errors.username.message}</p>}
             </div>
           )}
-          <div className="space-y-2.5">
-            <Label htmlFor="email" className="font-semibold text-muted-foreground ml-1">Email</Label>
+          <div className="space-y-1">
+            <Label htmlFor="email" className="text-[12px] font-medium tracking-[0.4px] text-body-subtle ml-1">Email</Label>
             <Input
               id="email"
               type="email"
               placeholder="you@example.com"
-              required
               disabled={isLoading}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="h-12 bg-background/50 border-border/50 focus-visible:ring-primary/50 focus-visible:border-primary/50 rounded-xl transition-all"
+              {...formRegister('email')}
+              className={`bg-secondary text-heading text-[16px] border-transparent hover:border-input focus-visible:ring-0 focus-visible:border-primary rounded-[12px] px-[16px] py-[12px] h-auto transition-all ${errors.email ? 'border-red-500 focus-visible:border-red-500' : ''}`}
             />
+            {errors.email && <p className="text-red-500 text-[12px] ml-1">{errors.email.message}</p>}
           </div>
-          <div className="space-y-2.5">
-            <Label htmlFor="password" className="font-semibold text-muted-foreground ml-1">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              required
-              disabled={isLoading}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="h-12 bg-background/50 border-border/50 focus-visible:ring-primary/50 focus-visible:border-primary/50 rounded-xl transition-all"
-            />
+          <div className="space-y-1">
+            <Label htmlFor="password" className="text-[12px] font-medium tracking-[0.4px] text-body-subtle ml-1">Password</Label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                disabled={isLoading}
+                {...formRegister('password')}
+                className={`bg-secondary text-heading text-[16px] border-transparent hover:border-input focus-visible:ring-0 focus-visible:border-primary rounded-[12px] px-[16px] py-[12px] h-auto transition-all pr-[40px] ${errors.password ? 'border-red-500 focus-visible:border-red-500' : ''}`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+              >
+                {showPassword ? <EyeOff className="h-[18px] w-[18px]" /> : <Eye className="h-[18px] w-[18px]" />}
+              </button>
+            </div>
+            {errors.password && <p className="text-red-500 text-[12px] ml-1">{errors.password.message}</p>}
           </div>
 
-          <Button type="submit" className="w-full h-12 mt-6 rounded-xl font-bold tracking-wide shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all" disabled={isLoading}>
+          <Button type="submit" className="w-full h-[48px] mt-[24px] rounded-[12px] text-[14px] font-medium tracking-[0.1px] shadow-md transition-all" disabled={isLoading}>
             {isLoading ? 'Processing...' : mode === 'login' ? 'Sign In' : 'Sign Up'}
           </Button>
         </form>
 
-        <div className="text-center text-sm text-muted-foreground mb-2 relative z-10">
+        <div className="text-center text-[14px] text-body mb-2 relative z-10">
           {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
           <button
             type="button"
-            onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-            className="text-primary hover:text-primary/80 font-bold underline decoration-primary/30 underline-offset-4 transition-colors"
+            onClick={() => {
+              setMode(mode === 'login' ? 'register' : 'login');
+              reset();
+            }}
+            className="text-primary hover:text-primary/80 font-medium transition-colors"
             disabled={isLoading}
           >
             {mode === 'login' ? 'Sign up' : 'Sign in'}

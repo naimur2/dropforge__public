@@ -10,10 +10,15 @@ export class DropController {
     this.dropService = new DropService();
   }
 
-  getAll = async (_req: Request, res: Response): Promise<void> => {
-    const data = await this.dropService.getAll();
-    const response: ApiResponse<DropDto[]> = { success: true, data };
-    res.status(200).json(response);
+  getAll = async (req: Request, res: Response): Promise<void> => {
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 12;
+    const search = req.query.search as string | undefined;
+    const status = req.query.status as string | undefined;
+
+    const result = await this.dropService.getAll({ page, limit, search, status });
+    // result contains { data, meta }
+    res.status(200).json({ success: true, ...result });
   };
 
   getById = async (req: Request, res: Response): Promise<void> => {

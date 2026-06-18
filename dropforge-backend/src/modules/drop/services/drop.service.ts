@@ -10,9 +10,16 @@ export class DropService {
     this.dropRepository = new DropRepository();
   }
 
-  async getAll(): Promise<DropDto[]> {
-    const drops = await this.dropRepository.findAll();
-    return drops.map(DropMapper.toDto);
+  async getAll(query: { page?: number; limit?: number; search?: string; status?: string }) {
+    const result = await this.dropRepository.findAll(query);
+    return {
+      data: result.data.map(DropMapper.toDto),
+      meta: {
+        total: result.total,
+        page: result.page,
+        limit: result.limit,
+      }
+    };
   }
 
   async getById(id: string): Promise<DropDto> {

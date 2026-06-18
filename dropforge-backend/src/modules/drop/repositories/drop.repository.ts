@@ -9,12 +9,45 @@ const DROP_WITH_PURCHASERS = {
   },
 } as const;
 
+export interface FindAllDropsOptions {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+}
+
 export class DropRepository {
-  async findAll() {
-    return prisma.drop.findMany({
-      orderBy: { startAt: 'desc' },
-      include: DROP_WITH_PURCHASERS,
-    });
+  async findAll(options: FindAllDropsOptions = {}) {
+    const { page = 1, limit = 12, search, status } = options;
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+
+    if (search) {
+      where.name = { contains: search, mode: 'insensitive' };
+    }
+
+    if (status === 'available') {
+      where.startAt = { lte: new Date() };
+      where.availableStock = { gt: 0 };
+    } else if (status === 'coming soon') {
+      where.startAt = { gt: new Date() };
+    } else if (status === 'soldout') {
+      where.availableStock = 0;
+    }
+
+    const [data, total] = await Promise.all([
+      prisma.drop.findMany({
+        where,
+        orderBy: { startAt: 'desc' },
+        include: DROP_WITH_PURCHASERS,
+        skip,
+        take: limit,
+      }),
+      prisma.drop.count({ where }),
+    ]);
+
+    return { data, total, page, limit };
   }
 
   async findById(id: string) {

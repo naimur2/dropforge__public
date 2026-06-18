@@ -16,12 +16,12 @@ export function StockBadge({ availableStock, totalStock, className }: StockBadge
     <Badge
       variant="outline"
       className={cn(
-        'font-mono text-xs px-2 py-0.5 whitespace-nowrap transition-colors',
+        'text-[11px] font-medium tracking-[0.5px] uppercase px-[8px] py-[4px] rounded-[8px] transition-colors border-0',
         isSoldOut
-          ? 'border-destructive text-destructive bg-destructive/10'
+          ? 'text-fg-danger-strong bg-danger-soft'
           : isLowStock
-          ? 'border-amber-500 text-amber-500 bg-amber-500/10'
-          : 'border-green-500 text-green-500 bg-green-500/10',
+          ? 'text-fg-warning bg-warning-soft'
+          : 'text-fg-success-strong bg-success-soft',
         className
       )}
     >
@@ -29,7 +29,7 @@ export function StockBadge({ availableStock, totalStock, className }: StockBadge
         'SOLD OUT'
       ) : (
         <>
-          <span className={cn('mr-1.5 h-1.5 w-1.5 rounded-full inline-block', isLowStock ? 'animate-pulse bg-amber-500' : 'bg-green-500')} />
+          <span className={cn('mr-[6px] h-[6px] w-[6px] rounded-full inline-block', isLowStock ? 'animate-pulse bg-fg-warning' : 'bg-fg-success-strong')} />
           {availableStock} / {totalStock} LEFT
         </>
       )}
