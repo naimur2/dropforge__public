@@ -32,4 +32,15 @@ export class DropController {
     const response: ApiResponse<DropDto> = { success: true, data };
     res.status(201).json(response);
   };
+
+  update = async (req: Request, res: Response): Promise<void> => {
+    const data = await this.dropService.update(req.params.id, req.body);
+    const response: ApiResponse<DropDto> = { success: true, data };
+    res.status(200).json(response);
+  };
+
+  delete = async (req: Request, res: Response): Promise<void> => {
+    await this.dropService.delete(req.params.id);
+    res.status(204).send();
+  };
 }

@@ -88,4 +88,24 @@ export class DropRepository {
       data: { availableStock: { increment: 1 } },
     });
   }
+
+  async update(id: string, data: Partial<{
+    name: string;
+    imageUrl: string;
+    totalStock: number;
+    availableStock: number;
+    startAt: Date;
+  }>) {
+    return prisma.drop.update({
+      where: { id },
+      data,
+      include: DROP_WITH_PURCHASERS,
+    });
+  }
+
+  async delete(id: string) {
+    return prisma.drop.delete({
+      where: { id },
+    });
+  }
 }

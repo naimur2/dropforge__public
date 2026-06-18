@@ -33,8 +33,11 @@ export const createPurchaseSchema = z.object({
   reservationId: z.string().uuid('Invalid reservation ID'),
 });
 
+export const updateDropSchema = createDropSchema.partial();
+
 export type RegisterSchema = z.infer<typeof registerSchema>;
 export type LoginSchema = z.infer<typeof loginSchema>;
 export type CreateDropSchema = z.infer<typeof createDropSchema>;
+export type UpdateDropSchema = z.infer<typeof updateDropSchema>;
 export type CreateReservationSchema = z.infer<typeof createReservationSchema>;
 export type CreatePurchaseSchema = z.infer<typeof createPurchaseSchema>;

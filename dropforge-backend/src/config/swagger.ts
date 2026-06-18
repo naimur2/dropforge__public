@@ -11,7 +11,10 @@ const options: swaggerJsdoc.Options = {
       description:
         'Enterprise-grade real-time inventory reservation platform for high-concurrency merch and sneaker drops.',
     },
-    servers: [{ url: `http://localhost:${env.PORT}`, description: 'Development server' }],
+    servers: [
+      { url: '/', description: 'Current environment (Production/Local)' },
+      { url: `http://localhost:${env.PORT}`, description: 'Local Development' }
+    ],
     components: {
       securitySchemes: {
         bearerAuth: {

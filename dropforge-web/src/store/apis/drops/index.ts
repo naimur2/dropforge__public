@@ -2,6 +2,7 @@ import { apiSlice } from '../index';
 import type { 
   DropDto, 
   CreateDropDto,
+  UpdateDropDto,
 } from '@shared/dto';
 import type { ApiResponse } from '@shared/types';
 import { globalSocket } from '@/providers/SocketProvider';
@@ -91,7 +92,32 @@ export const dropsApi = apiSlice.injectEndpoints({
       transformResponse: (response: ApiResponse<DropDto>) => response.data,
       invalidatesTags: [{ type: 'Drop', id: 'LIST' }],
     }),
+    updateDrop: builder.mutation<DropDto, { id: string; data: UpdateDropDto }>({
+      query: ({ id, data }) => ({
+        url: `/drops/${id}`,
+        method: 'PUT',
+        body: data,
+      }),
+      transformResponse: (response: ApiResponse<DropDto>) => response.data,
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Drop', id },
+        { type: 'Drop', id: 'LIST' },
+      ],
+    }),
+    deleteDrop: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/drops/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: [{ type: 'Drop', id: 'LIST' }],
+    }),
   }),
 });
 
-export const { useGetDropsQuery, useGetDropByIdQuery, useCreateDropMutation } = dropsApi;
+export const { 
+  useGetDropsQuery, 
+  useGetDropByIdQuery, 
+  useCreateDropMutation,
+  useUpdateDropMutation,
+  useDeleteDropMutation,
+} = dropsApi;

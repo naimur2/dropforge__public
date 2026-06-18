@@ -38,4 +38,31 @@ export class DropService {
     });
     return DropMapper.toDto(drop);
   }
+
+  async update(id: string, dto: Partial<CreateDropDto>): Promise<DropDto> {
+    const existing = await this.dropRepository.findById(id);
+    if (!existing) throw new NotFoundException('Drop');
+    
+    // Calculate new available stock if total stock changes
+    let availableStock = existing.availableStock;
+    if (dto.totalStock !== undefined) {
+      const difference = dto.totalStock - existing.totalStock;
+      availableStock = Math.max(0, existing.availableStock + difference);
+    }
+
+    const drop = await this.dropRepository.update(id, {
+      name: dto.name,
+      imageUrl: dto.imageUrl,
+      totalStock: dto.totalStock,
+      availableStock,
+      startAt: dto.startAt ? new Date(dto.startAt) : undefined,
+    });
+    return DropMapper.toDto(drop);
+  }
+
+  async delete(id: string): Promise<void> {
+    const existing = await this.dropRepository.findById(id);
+    if (!existing) throw new NotFoundException('Drop');
+    await this.dropRepository.delete(id);
+  }
 }

@@ -45,6 +45,8 @@ export interface CreateDropDto {
   startAt: string;
 }
 
+export type UpdateDropDto = Partial<CreateDropDto>;
+
 export interface ReservationDto {
   id: string;
   userId: string;

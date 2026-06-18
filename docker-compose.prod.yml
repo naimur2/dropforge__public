@@ -41,9 +41,7 @@ services:
 
   # ── API ───────────────────────────────────────────────────────────────────────
   api:
-    build:
-      context: ./dropforge-backend
-      dockerfile: Dockerfile
+    image: ghcr.io/${GITHUB_REPOSITORY:-naimur2/dropforge}/dropforge-api:latest
     container_name: dropforge-api
     restart: unless-stopped
     networks:
@@ -60,15 +58,15 @@ services:
 
   # ── Web (Frontend) ────────────────────────────────────────────────────────────
   web:
-    build:
-      context: ./dropforge-web
-      dockerfile: Dockerfile
+    image: ghcr.io/${GITHUB_REPOSITORY:-naimur2/dropforge}/dropforge-web:latest
     container_name: dropforge-web
     restart: unless-stopped
     networks:
       - dropforge_network
     ports:
       - "3000:80"
+    env_file:
+      - ./dropforge-web/.env
     depends_on:
       - api
 

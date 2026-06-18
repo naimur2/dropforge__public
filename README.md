@@ -41,6 +41,37 @@ yarn dev
 
 The application will be available at `http://localhost:3000`.
 
+### 3. Production Deployment (CI/CD Pipeline)
+This repository includes a robust **GitHub Actions CI/CD Pipeline** that automatically deploys the application to a self-hosted VPS while optimizing resource usage.
+
+#### Architecture
+To prevent the VPS from experiencing CPU/RAM spikes during build time, the pipeline uses a hybrid approach:
+1. **GitHub-hosted runner**: Builds the Docker images and pushes them to GitHub Container Registry (`ghcr.io`).
+2. **Self-hosted runner (VPS)**: Connects to GHCR, pulls the pre-compiled images, and spins them up.
+
+#### Prerequisites
+Your VPS must have the following installed:
+- Docker & Docker Compose
+- Caddy (running as a system service)
+- GitHub Actions Self-Hosted Runner (configured and running)
+
+#### Required GitHub Secrets
+You must configure the following Action Secrets in your GitHub repository before deploying:
+- `GITHUB_TOKEN` (usually auto-provided, or provide a Personal Access Token with package write permissions).
+- `SUDO_PASSWORD`: The sudo password for your VPS user (used to safely execute Docker and Caddy commands without granting passwordless sudo).
+- `FRONTEND_ENV`: The full string contents of your production `dropforge-web/.env` file.
+- `BACKEND_ENV`: The full string contents of your production `dropforge-backend/.env` file.
+
+#### Automated Deployment Flow
+1. **Push to `main`**: Trigger the pipeline automatically.
+2. **Build**: The images are built by GitHub and pushed to GHCR.
+3. **VPS Execution**: The self-hosted runner will:
+   - Securely dump the environment secrets into local `.env` files via `cat EOF`.
+   - Run `docker system prune -f` to clean up dangling caches and save disk space.
+   - Pull the new images using `docker-compose.prod.yml`.
+   - Start the containers.
+   - Reload the local `Caddyfile` to update the reverse proxy rules.
+
 ### 3. API Documentation & Creating Drops
 DropForge provides a fully documented OpenAPI (Swagger) interface for the backend. 
 
