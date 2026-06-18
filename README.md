@@ -3,6 +3,7 @@
 DropForge is a real-time, high-traffic limited edition merch drop platform. It features atomic reservations, auto-expiring temporary inventory holds, and real-time WebSocket synchronization across all connected clients.
 
 ## Tech Stack
+
 - **Frontend**: React + Vite + Tailwind CSS + shadcn/ui + Redux Toolkit (RTK Query)
 - **Backend**: Node.js + Express
 - **Database**: PostgreSQL
@@ -13,11 +14,13 @@ DropForge is a real-time, high-traffic limited edition merch drop platform. It f
 ## How to Run the App
 
 ### Prerequisites
+
 - Docker & Docker Compose
 - Node.js 20+
 - Yarn or npm
 
 ### 1. Database and Backend Setup
+
 We use Docker Compose to spin up PostgreSQL, Redis, and the backend API container.
 
 ```bash
@@ -28,9 +31,10 @@ docker compose up -d --build
 # The database runs on port 5432 and Redis on 6379
 ```
 
-*Note: Prisma migrations are automatically generated and applied during the Docker build process, so no manual SQL schema setup is required!*
+_Note: Prisma migrations are automatically generated and applied during the Docker build process, so no manual SQL schema setup is required!_
 
 ### 2. Frontend Setup
+
 Run the frontend locally.
 
 ```bash
@@ -42,27 +46,35 @@ yarn dev
 The application will be available at `http://localhost:3000`.
 
 ### 3. Production Deployment (CI/CD Pipeline)
+
 This repository includes a robust **GitHub Actions CI/CD Pipeline** that automatically deploys the application to a self-hosted VPS while optimizing resource usage.
 
 #### Architecture
+
 To prevent the VPS from experiencing CPU/RAM spikes during build time, the pipeline uses a hybrid approach:
+
 1. **GitHub-hosted runner**: Builds the Docker images and pushes them to GitHub Container Registry (`ghcr.io`).
 2. **Self-hosted runner (VPS)**: Connects to GHCR, pulls the pre-compiled images, and spins them up.
 
 #### Prerequisites
+
 Your VPS must have the following installed:
+
 - Docker & Docker Compose
 - Caddy (running as a system service)
 - GitHub Actions Self-Hosted Runner (configured and running)
 
 #### Required GitHub Secrets
+
 You must configure the following Action Secrets in your GitHub repository before deploying:
+
 - `GITHUB_TOKEN` (usually auto-provided, or provide a Personal Access Token with package write permissions).
 - `SUDO_PASSWORD`: The sudo password for your VPS user (used to safely execute Docker and Caddy commands without granting passwordless sudo).
 - `FRONTEND_ENV`: The full string contents of your production `dropforge-web/.env` file.
 - `BACKEND_ENV`: The full string contents of your production `dropforge-backend/.env` file.
 
 #### Automated Deployment Flow
+
 1. **Push to `main`**: Trigger the pipeline automatically.
 2. **Build**: The images are built by GitHub and pushed to GHCR.
 3. **VPS Execution**: The self-hosted runner will:
@@ -73,12 +85,15 @@ You must configure the following Action Secrets in your GitHub repository before
    - Reload the local `Caddyfile` to update the reverse proxy rules.
 
 ### 3. API Documentation & Creating Drops
-DropForge provides a fully documented OpenAPI (Swagger) interface for the backend. 
+
+DropForge provides a fully documented OpenAPI (Swagger) interface for the backend.
 
 You can access the API documentation here: **[http://localhost:4000/api/docs](http://localhost:4000/api/docs)**
 
 #### How to Create a Drop
+
 Since there is no dedicated Admin UI panel, you can easily create new drops directly through the Swagger documentation:
+
 1. **Register/Login** through the frontend UI or the Swagger `/api/auth` endpoints to get your JWT token.
 2. In Swagger, click the green **Authorize** button at the top and paste your JWT token.
 3. Scroll down to the `POST /api/drops` endpoint, click **Try it out**, and provide the drop details (name, image URL, stock, start date).
@@ -89,22 +104,29 @@ Since there is no dedicated Admin UI panel, you can easily create new drops dire
 ## Architecture Choices
 
 ### How did you handle the 60-second expiration logic?
+
 When a user successfully clicks "Reserve", two things happen:
+
 1. The backend creates a `Reservation` record in Postgres with an `expiresAt` timestamp set to 60 seconds in the future.
 2. The backend enqueues a delayed job in **BullMQ (backed by Redis)** configured to execute after exactly 60 seconds.
 
-When the BullMQ worker picks up the job 60 seconds later, it checks the database to see if the reservation is still `ACTIVE`. 
+When the BullMQ worker picks up the job 60 seconds later, it checks the database to see if the reservation is still `ACTIVE`.
+
 - If the user purchased the item, the status would be `PURCHASED`, and the worker does nothing.
 - If it is still `ACTIVE`, the worker transitions the reservation to `EXPIRED`, increments the available stock back by 1 in the `drops` table, and emits a `STOCK_UPDATED` WebSocket event. This creates the "Stock Recovery" mechanism.
 
 ### Concurrency: How did you prevent multiple users from claiming the same last item?
+
 To prevent "Overselling" when 100 users hit "Reserve" at the exact same millisecond, the backend utilizes **PostgreSQL Row-Level Locks** (`SELECT ... FOR UPDATE`).
 
 Within a Prisma `$transaction`, the backend runs a raw SQL query:
+
 ```sql
 SELECT * FROM drops WHERE id = $1::text FOR UPDATE
 ```
+
 This forces Postgres to acquire an exclusive row-level lock on that specific drop. If 100 requests hit the database simultaneously, the database forces them into a queue, processing them one at a time. The first request will see `availableStock: 1`, reserve the item, and decrement the stock to `0`. The 99 subsequent queued requests will then read the updated row (seeing `availableStock: 0`) and fail gracefully with a Conflict error, guaranteeing that stock never drops below zero.
 
 ## Real-Time Synchronization
-The frontend leverages RTK Query's `onCacheEntryAdded` lifecycle to hook directly into the global Socket.IO instance. When the backend emits `STOCK_UPDATED` or `PURCHASE_COMPLETED` events, the frontend patches the Redux cache directly without needing to re-fetch from the API, providing zero-lag visual updates for all connected clients.
+
+The frontend leverages RTK Query's `onCacheEntryAdded` lifecycle to hook directly into the global Socket.IO instance. When the backend emits `STOCK_UPDATED` or `PURCHASE_COMPLETED` events, the frontend patches the Redux cache directly without needing to re-fetch from the API, providing zero-lag visual updates for all connected clients
