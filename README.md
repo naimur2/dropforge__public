@@ -41,6 +41,20 @@ yarn dev
 
 The application will be available at `http://localhost:3000`.
 
+### 3. API Documentation & Creating Drops
+DropForge provides a fully documented OpenAPI (Swagger) interface for the backend. 
+
+You can access the API documentation here: **[http://localhost:4000/api/docs](http://localhost:4000/api/docs)**
+
+#### How to Create a Drop
+Since there is no dedicated Admin UI panel, you can easily create new drops directly through the Swagger documentation:
+1. **Register/Login** through the frontend UI or the Swagger `/api/auth` endpoints to get your JWT token.
+2. In Swagger, click the green **Authorize** button at the top and paste your JWT token.
+3. Scroll down to the `POST /api/drops` endpoint, click **Try it out**, and provide the drop details (name, image URL, stock, start date).
+4. Any logged-in user can add a drop to test the system!
+
+![Create Drop via Swagger](./screnshots/create-drop.png)
+
 ## Architecture Choices
 
 ### How did you handle the 60-second expiration logic?

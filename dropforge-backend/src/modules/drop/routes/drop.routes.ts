@@ -48,6 +48,7 @@ router.get('/:id', validate({ params: idParamSchema }), controller.getById);
  * /api/drops:
  *   post:
  *     summary: Create a new drop (admin)
+ *     description: You must be logged in to create a drop. Just authenticate and provide the required fields to add a drop to the store.
  *     tags: [Drops]
  *     security:
  *       - bearerAuth: []
