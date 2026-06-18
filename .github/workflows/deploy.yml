@@ -43,8 +43,8 @@ jobs:
           docker compose -f docker-compose.yml build
           
           # Tag the built images with the GHCR repository
-          docker tag dropforge-dropforge-api:latest ghcr.io/${{ github.repository }}/dropforge-api:latest
-          docker tag dropforge-dropforge-web:latest ghcr.io/${{ github.repository }}/dropforge-web:latest
+          docker tag dropforge-api:latest ghcr.io/${{ github.repository }}/dropforge-api:latest
+          docker tag dropforge-web:latest ghcr.io/${{ github.repository }}/dropforge-web:latest
 
       - name: Push Images to GHCR
         run: |
