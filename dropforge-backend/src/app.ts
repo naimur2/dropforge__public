@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
+import 'express-async-errors';
 import helmet from 'helmet';
 import compression from 'compression';
 import cors from 'cors';

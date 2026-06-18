@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useGetDropsQuery } from '@/store/apis/drops';
 import { DropCard } from './DropCard';
 import { Skeleton } from '@/components/ui/skeleton';

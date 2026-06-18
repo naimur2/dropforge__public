@@ -11,7 +11,7 @@ import { Mutex } from 'async-mutex';
 
 import { logout } from '../features/auth.slice';
 
-const BASE_URL = 'http://localhost:4000/api/v1'; // Hardcoded for dev, env var in prod
+const BASE_URL = '/api';
 const refreshMutex = new Mutex();
 
 const rawBaseQuery = fetchBaseQuery({
