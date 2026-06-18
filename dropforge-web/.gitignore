@@ -1,0 +1,37 @@
+# dependencies
+node_modules
+.pnp
+.pnp.js
+
+# build output
+dist
+dist-ssr
+build
+out
+
+# env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+
+# logs
+logs
+*.log
+npm-debug.log*
+
+# docker
+.dockerignore
+docker-compose*
+Dockerfile
+
+# os & IDE
+.DS_Store
+Thumbs.db
+.idea
+.vscode
+*.swp
+*.swo
+coverage
