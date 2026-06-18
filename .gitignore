@@ -18,9 +18,6 @@ out
 .env.*
 
 # docker
-.dockerignore
-docker-compose.override.yml
-
 # logs
 logs
 *.log

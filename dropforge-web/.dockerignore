@@ -1,0 +1,10 @@
+node_modules
+dist
+dist-ssr
+logs
+*.log
+.git
+.gitignore
+coverage
+docker-compose*
+README.md
