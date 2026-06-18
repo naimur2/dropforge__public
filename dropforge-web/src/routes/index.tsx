@@ -19,19 +19,19 @@ function Index() {
           <div className="flex-1 space-y-[24px]">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-[12px] font-medium border border-primary/20">
               <Flame className="w-[14px] h-[14px] animate-bounce" />
-              <span className="uppercase tracking-[0.5px]">Next-gen Drop Platform</span>
+              <span className="uppercase tracking-[0.5px]">Exclusive Limited Drops</span>
             </div>
             
             <h1 className="text-[36px] md:text-[45px] lg:text-[57px] font-medium text-heading leading-[1.12] tracking-[-0.25px]">
-              Secure the <br className="hidden md:block" />
+              Cop the most hyped <br className="hidden md:block" />
               <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-purple-500 drop-shadow-sm">
-                Unobtainable
+                streetwear & merch
               </span>
             </h1>
             
-            <p className="text-[18px] text-body max-w-[70ch] leading-[1.5] tracking-[0.5px]">
-              Real-time inventory. Instant reservations. Zero lag.
-              Join the ultimate platform for high-demand product drops.
+            <p className="text-[18px] text-body max-w-[70ch] leading-normal tracking-[0.5px]">
+              We partner with top creators and brands to bring you highly anticipated releases. 
+              Our real-time reservation system guarantees your item while you checkout. No bots, no lag, no heartbreak.
             </p>
           </div>
 
