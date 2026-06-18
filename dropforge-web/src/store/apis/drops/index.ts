@@ -7,7 +7,6 @@ import type {
 import type { ApiResponse } from '@shared/types';
 import { globalSocket } from '@/providers/SocketProvider';
 import { SOCKET_EVENTS } from '@/shared/events';
-import type { StockUpdatedEvent, PurchaseCompletedEvent } from '@/shared/events';
 
 export interface GetDropsArgs {
   page?: number;
@@ -40,7 +39,7 @@ export const dropsApi = apiSlice.injectEndpoints({
             ]
           : [{ type: 'Drop', id: 'LIST' }],
       async onCacheEntryAdded(
-        arg,
+        _arg,
         { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
       ) {
         try {
