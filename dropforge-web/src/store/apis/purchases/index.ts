@@ -14,8 +14,11 @@ export const purchasesApi = apiSlice.injectEndpoints({
         body: purchaseData,
       }),
       transformResponse: (response: ApiResponse<PurchaseDto>) => response.data,
-      // Invalidates reservations list since a reservation is now "PURCHASED"
-      invalidatesTags: [{ type: 'Reservation', id: 'LIST' }],
+      invalidatesTags: [
+        { type: 'Reservation', id: 'LIST' },
+        { type: 'Drop', id: 'LIST' },
+        { type: 'Purchase', id: 'LIST' }
+      ],
     }),
   }),
 });

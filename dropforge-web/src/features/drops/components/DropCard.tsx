@@ -4,11 +4,13 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Button } from '@/components/ui/button';
 import { StockBadge } from './StockBadge';
 import { CalendarClock, Flame } from 'lucide-react';
-import { formatDistanceToNow, isFuture } from 'date-fns';
+import { formatDistanceToNow, isFuture, differenceInSeconds } from 'date-fns';
 import { useCreateReservationMutation, useGetMyReservationsQuery } from '@/store/apis/reservations';
+import { useCreatePurchaseMutation } from '@/store/apis/purchases';
 import { toast } from 'sonner';
 import { useAppSelector } from '@/store/hooks';
 import { AuthModals } from '@/features/auth/components/AuthModals';
+import { useEffect, useState } from 'react';
 
 interface DropCardProps {
   drop: DropDto;
@@ -16,11 +18,37 @@ interface DropCardProps {
 }
 
 export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
-  const [createReservation, { isLoading }] = useCreateReservationMutation();
+  const [createReservation, { isLoading: isReserving }] = useCreateReservationMutation();
+  const [createPurchase, { isLoading: isPurchasing }] = useCreatePurchaseMutation();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const { data: reservations } = useGetMyReservationsQuery(undefined, { skip: !isAuthenticated });
 
-  const hasReserved = reservations?.some((res) => res.dropId === drop.id && res.status !== 'EXPIRED');
+  const activeReservation = reservations?.find((res) => res.dropId === drop.id && res.status === 'ACTIVE');
+  const hasReserved = !!activeReservation;
+
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!activeReservation) {
+      setTimeLeft(null);
+      return;
+    }
+
+    const calculateRemaining = () => {
+      const remaining = differenceInSeconds(new Date(activeReservation.expiresAt), new Date());
+      return remaining > 0 ? remaining : 0;
+    };
+
+    setTimeLeft(calculateRemaining());
+
+    const interval = setInterval(() => {
+      const remaining = calculateRemaining();
+      setTimeLeft(remaining);
+      if (remaining <= 0) clearInterval(interval);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [activeReservation]);
 
   const isUpcoming = isFuture(new Date(drop.startAt));
   const isSoldOut = drop.availableStock <= 0;
@@ -40,6 +68,16 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
       }
     } catch (err: any) {
       toast.error(err?.data?.message || 'Failed to reserve drop. It might be sold out.');
+    }
+  };
+
+  const handlePurchase = async () => {
+    if (!activeReservation) return;
+    try {
+      await createPurchase({ reservationId: activeReservation.id }).unwrap();
+      toast.success('Successfully copped! You are now an owner.');
+    } catch (err: any) {
+      toast.error(err?.data?.message || 'Checkout failed');
     }
   };
 
@@ -107,7 +145,7 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
             trigger={
               <Button 
                 onClick={handleReserve} 
-                disabled={isLoading} 
+                disabled={isReserving} 
                 className="w-full h-11 text-[14px] font-medium tracking-[0.1px] relative overflow-hidden group/btn rounded-[8px] transition-all shadow-sm active:scale-95"
                 variant="default"
               >
@@ -118,19 +156,33 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
               </Button>
             } 
           />
+        ) : hasReserved && timeLeft !== null && timeLeft > 0 ? (
+          <Button 
+            onClick={handlePurchase} 
+            disabled={isPurchasing} 
+            className="w-full h-11 text-[14px] font-medium tracking-[0.1px] relative overflow-hidden rounded-[8px] transition-all shadow-sm active:scale-95 bg-green-600 hover:bg-green-700 text-white"
+          >
+            {isPurchasing ? (
+              <span className="flex items-center gap-2">
+                <Flame className="w-4 h-4 animate-spin" /> Processing...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                Complete Purchase ({timeLeft}s)
+              </span>
+            )}
+          </Button>
         ) : (
           <Button 
             onClick={handleReserve} 
-            disabled={!canReserve || isLoading || hasReserved} 
+            disabled={!canReserve || isReserving} 
             className="w-full h-11 text-[14px] font-medium tracking-[0.1px] relative overflow-hidden group/btn rounded-[8px] transition-all shadow-sm active:scale-95"
-            variant={isUpcoming || hasReserved ? "secondary" : "default"}
+            variant={isUpcoming ? "secondary" : "default"}
           >
-            {isLoading ? (
+            {isReserving ? (
               <span className="flex items-center gap-2">
                 <Flame className="w-4 h-4 animate-spin" /> Securing...
               </span>
-            ) : hasReserved ? (
-              'Reserved'
             ) : isUpcoming ? (
               'Coming Soon'
             ) : isSoldOut ? (

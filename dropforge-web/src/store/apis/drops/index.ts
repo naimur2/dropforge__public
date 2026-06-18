@@ -4,6 +4,9 @@ import type {
   CreateDropDto,
 } from '@shared/dto';
 import type { ApiResponse } from '@shared/types';
+import { globalSocket } from '@/providers/SocketProvider';
+import { SOCKET_EVENTS } from '@/shared/events';
+import type { StockUpdatedEvent, PurchaseCompletedEvent } from '@/shared/events';
 
 export interface GetDropsArgs {
   page?: number;
@@ -35,6 +38,44 @@ export const dropsApi = apiSlice.injectEndpoints({
               { type: 'Drop', id: 'LIST' },
             ]
           : [{ type: 'Drop', id: 'LIST' }],
+      async onCacheEntryAdded(
+        arg,
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
+      ) {
+        try {
+          await cacheDataLoaded;
+
+          if (!globalSocket) return;
+
+          const onStockUpdated = (data: any) => {
+            updateCachedData((draft) => {
+              const drop = draft.data.find((d) => d.id === data.dropId);
+              if (drop) {
+                drop.availableStock = data.availableStock;
+              }
+            });
+          };
+
+          const onPurchaseCompleted = (data: any) => {
+            updateCachedData((draft) => {
+              const drop = draft.data.find((d) => d.id === data.dropId);
+              if (drop) {
+                drop.latestPurchasers = data.latestPurchasers;
+              }
+            });
+          };
+
+          globalSocket.on(SOCKET_EVENTS.STOCK_UPDATED, onStockUpdated);
+          globalSocket.on(SOCKET_EVENTS.PURCHASE_COMPLETED, onPurchaseCompleted);
+
+          await cacheEntryRemoved;
+
+          globalSocket.off(SOCKET_EVENTS.STOCK_UPDATED, onStockUpdated);
+          globalSocket.off(SOCKET_EVENTS.PURCHASE_COMPLETED, onPurchaseCompleted);
+        } catch {
+          // no-op if cacheEntryRemoved resolves before loaded
+        }
+      },
     }),
     getDropById: builder.query<DropDto, string>({
       query: (id) => `/drops/${id}`,

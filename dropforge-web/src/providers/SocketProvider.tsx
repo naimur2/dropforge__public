@@ -17,6 +17,8 @@ const SocketContext = createContext<SocketContextValue>({
 
 export const useSocket = () => useContext(SocketContext);
 
+export let globalSocket: AppSocket | null = null;
+
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [socket, setSocket] = useState<AppSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -26,6 +28,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (!isAuthenticated) {
       if (socket) {
         socket.disconnect();
+        globalSocket = null;
         setSocket(null);
         setIsConnected(false);
       }
@@ -40,9 +43,11 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     newSocket.on('connect', () => setIsConnected(true));
     newSocket.on('disconnect', () => setIsConnected(false));
 
+    globalSocket = newSocket;
     setSocket(newSocket);
 
     return () => {
+      globalSocket = null;
       newSocket.disconnect();
     };
   }, [isAuthenticated]);
