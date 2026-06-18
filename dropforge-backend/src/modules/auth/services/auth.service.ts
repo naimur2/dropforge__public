@@ -62,6 +62,14 @@ export class AuthService {
     return { user: UserMapper.toDto(user), ...tokens };
   }
 
+  async getMe(userId: string): Promise<UserDto> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    return UserMapper.toDto(user);
+  }
+
   private generateTokens(userId: string) {
     const accessToken = jwt.sign({ userId }, env.JWT_SECRET, {
       expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'],

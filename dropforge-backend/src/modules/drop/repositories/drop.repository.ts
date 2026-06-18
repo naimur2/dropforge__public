@@ -60,7 +60,7 @@ export class DropRepository {
   async findByIdForUpdate(id: string, tx: typeof prisma) {
     // Raw query for SELECT FOR UPDATE row lock (Prisma doesn't natively support it)
     const result = await tx.$queryRaw<Drop[]>`
-      SELECT * FROM drops WHERE id = ${id}::uuid FOR UPDATE
+      SELECT * FROM drops WHERE id = ${id}::text FOR UPDATE
     `;
     return result[0] ?? null;
   }

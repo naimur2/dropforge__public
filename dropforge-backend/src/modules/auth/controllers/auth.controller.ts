@@ -91,9 +91,10 @@ export class AuthController {
   };
 
   me = async (req: Request, res: Response<ApiResponse<any>>) => {
+    const user = await this.authService.getMe(req.user!.userId);
     res.json({
       success: true,
-      data: req.user,
+      data: user,
     });
   };
 }

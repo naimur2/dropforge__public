@@ -25,7 +25,10 @@ export const reservationsApi = apiSlice.injectEndpoints({
         body: reservationData,
       }),
       transformResponse: (response: ApiResponse<ReservationDto>) => response.data,
-      invalidatesTags: [{ type: 'Reservation', id: 'LIST' }],
+      invalidatesTags: [
+        { type: 'Reservation', id: 'LIST' },
+        { type: 'Drop', id: 'LIST' }
+      ],
     }),
   }),
 });

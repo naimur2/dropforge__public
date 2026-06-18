@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { StockBadge } from './StockBadge';
 import { CalendarClock, Flame } from 'lucide-react';
 import { formatDistanceToNow, isFuture } from 'date-fns';
-import { useCreateReservationMutation } from '@/store/apis/reservations';
+import { useCreateReservationMutation, useGetMyReservationsQuery } from '@/store/apis/reservations';
 import { toast } from 'sonner';
 import { useAppSelector } from '@/store/hooks';
 import { AuthModals } from '@/features/auth/components/AuthModals';
@@ -18,10 +18,13 @@ interface DropCardProps {
 export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
   const [createReservation, { isLoading }] = useCreateReservationMutation();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const { data: reservations } = useGetMyReservationsQuery(undefined, { skip: !isAuthenticated });
+
+  const hasReserved = reservations?.some((res) => res.dropId === drop.id && res.status !== 'EXPIRED');
 
   const isUpcoming = isFuture(new Date(drop.startAt));
   const isSoldOut = drop.availableStock <= 0;
-  const canReserve = !isUpcoming && !isSoldOut;
+  const canReserve = !isUpcoming && !isSoldOut && !hasReserved;
 
   const handleReserve = async () => {
     if (!isAuthenticated) {
@@ -118,14 +121,16 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
         ) : (
           <Button 
             onClick={handleReserve} 
-            disabled={!canReserve || isLoading} 
+            disabled={!canReserve || isLoading || hasReserved} 
             className="w-full h-11 text-[14px] font-medium tracking-[0.1px] relative overflow-hidden group/btn rounded-[8px] transition-all shadow-sm active:scale-95"
-            variant={isUpcoming ? "secondary" : "default"}
+            variant={isUpcoming || hasReserved ? "secondary" : "default"}
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
                 <Flame className="w-4 h-4 animate-spin" /> Securing...
               </span>
+            ) : hasReserved ? (
+              'Reserved'
             ) : isUpcoming ? (
               'Coming Soon'
             ) : isSoldOut ? (
