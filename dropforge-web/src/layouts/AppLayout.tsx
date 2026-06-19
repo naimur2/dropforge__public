@@ -25,6 +25,7 @@ export function AppLayout() {
       await logout().unwrap();
       toast.success('Successfully logged out.');
       setLogoutDialogOpen(false);
+      navigate({ to: '/' });
     } catch (err: any) {
       toast.error(err?.data?.message || 'Failed to logout. Please try again.');
     }
@@ -88,7 +89,7 @@ export function AppLayout() {
                         <span className="text-[14px] font-medium text-body">Profile</span>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator className="bg-border" />
-                      <DropdownMenuItem onSelect={(e) => { e.preventDefault(); setLogoutDialogOpen(true); }} className="text-destructive cursor-pointer hover:bg-muted focus:bg-muted transition-colors rounded-[8px] m-2">
+                      <DropdownMenuItem onClick={() => setLogoutDialogOpen(true)} className="text-destructive cursor-pointer hover:bg-muted focus:bg-muted transition-colors rounded-[8px] m-2">
                         <LogOut className="mr-2 h-[18px] w-[18px]" />
                         <span className="text-[14px] font-medium">Log out</span>
                       </DropdownMenuItem>
