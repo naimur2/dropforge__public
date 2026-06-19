@@ -17,6 +17,26 @@ export const reservationsApi = apiSlice.injectEndpoints({
               { type: 'Reservation', id: 'LIST' },
             ]
           : [{ type: 'Reservation', id: 'LIST' }],
+      async onCacheEntryAdded(_arg, { updateCachedData, cacheDataLoaded, cacheEntryRemoved }) {
+        try {
+          await cacheDataLoaded;
+          const { globalSocket } = await import('@/providers/SocketProvider');
+          if (!globalSocket) return;
+
+          const onExpired = (data: any) => {
+            updateCachedData((draft) => {
+              const index = draft.findIndex((r) => r.id === data.reservationId);
+              if (index !== -1) {
+                draft.splice(index, 1);
+              }
+            });
+          };
+
+          globalSocket.on('reservation.expired', onExpired);
+          await cacheEntryRemoved;
+          globalSocket.off('reservation.expired', onExpired);
+        } catch {}
+      },
     }),
     createReservation: builder.mutation<ReservationDto, CreateReservationDto>({
       query: (reservationData) => ({
