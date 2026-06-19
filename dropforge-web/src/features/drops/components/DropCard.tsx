@@ -13,6 +13,8 @@ import { AuthModals } from '@/features/auth/components/AuthModals';
 import { useEffect, useState, useRef } from 'react';
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 
+const turnstileOptions = { action: 'reserve', size: 'invisible' as const };
+
 interface DropCardProps {
   drop: DropDto;
   onReservationSuccess?: (reservationId: string) => void;
@@ -165,8 +167,8 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
       <CardFooter className="px-4 pb-4 pt-5 mt-auto relative z-20">
         <Turnstile
           siteKey={(import.meta as any).env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
-          options={{ action: 'reserve', size: 'invisible' }}
-          onSuccess={(token: string) => setTurnstileToken(token)}
+          options={turnstileOptions}
+          onSuccess={setTurnstileToken}
           ref={turnstileRef}
         />
         {!isAuthenticated && canReserve ? (

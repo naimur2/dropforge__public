@@ -27,6 +27,8 @@ export const turnstileMiddleware = async (req: Request, res: Response, next: Nex
     });
 
     const data = (await response.json()) as { success: boolean; 'error-codes'?: string[] };
+    
+    logger.info('Turnstile verification result', { tokenPrefix: token.substring(0, 10), data });
 
     if (!data.success) {
       logger.warn('Turnstile verification failed: Invalid token', { errorCodes: data['error-codes'] });
