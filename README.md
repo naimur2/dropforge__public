@@ -103,7 +103,7 @@ Since there is no dedicated Admin UI panel, you can easily create new drops dire
 
 ## Architecture Choices
 
-### How did you handle the 60-second expiration logic?
+### How is the 60-second expiration logic handled?
 
 When a user successfully clicks "Reserve", two things happen:
 
@@ -115,7 +115,7 @@ When the BullMQ worker picks up the job 60 seconds later, it checks the database
 - If the user purchased the item, the status would be `PURCHASED`, and the worker does nothing.
 - If it is still `ACTIVE`, the worker transitions the reservation to `EXPIRED`, increments the available stock back by 1 in the `drops` table, and emits a `STOCK_UPDATED` WebSocket event. This creates the "Stock Recovery" mechanism.
 
-### Concurrency: How did you prevent multiple users from claiming the same last item?
+### Concurrency: How are multiple users prevented from claiming the same last item?
 
 To prevent "Overselling" when 100 users hit "Reserve" at the exact same millisecond, the backend utilizes **PostgreSQL Row-Level Locks** (`SELECT ... FOR UPDATE`).
 
@@ -127,6 +127,14 @@ SELECT * FROM drops WHERE id = $1::text FOR UPDATE
 
 This forces Postgres to acquire an exclusive row-level lock on that specific drop. If 100 requests hit the database simultaneously, the database forces them into a queue, processing them one at a time. The first request will see `availableStock: 1`, reserve the item, and decrement the stock to `0`. The 99 subsequent queued requests will then read the updated row (seeing `availableStock: 0`) and fail gracefully with a Conflict error, guaranteeing that stock never drops below zero.
 
+### How is the app secured against Bots and DDoS attacks?
+
+High-traffic sneaker drops are prime targets for automated bots. To combat this, the application implements a multi-layered defense strategy:
+
+1. **Frontend Proof-of-Work (Cloudflare Turnstile):** The frontend leverages `@marsidev/react-turnstile` running in invisible mode. When a user clicks "Reserve Now", Turnstile silently analyzes the browser environment and generates a cryptographic token. The backend `turnstile.middleware.ts` verifies this token directly with Cloudflare, immediately rejecting any headless browsers, scripts, or automated API requests trying to bypass the UI.
+2. **Infrastructure Rate Limiting (Redis Sliding Window):** Even if an attacker manages to solve the Turnstile challenge, their request volume is strictly throttled by an atomic Sliding Window Log algorithm. Using a custom Express middleware and Redis Sorted Sets (`ZADD`, `ZREMRANGEBYSCORE`), the backend limits the `/api/reservations` endpoint to exactly 10 requests per 60 seconds per IP address. This prevents DDoS bursting and ensures fair access for real users without affecting legitimate retries.
+3. **Frontend Cooldown Throttle:** The "Reserve Now" button itself enforces a strict 2-second cooldown on consecutive clicks, which prevents double-submissions and accidental spamming of the backend.
+
 ## Real-Time Synchronization
 
-The frontend leverages RTK Query's `onCacheEntryAdded` lifecycle to hook directly into the global Socket.IO instance. When the backend emits `STOCK_UPDATED` or `PURCHASE_COMPLETED` events, the frontend patches the Redux cache directly without needing to re-fetch from the API, providing zero-lag visual updates for all connected clients
+The frontend leverages RTK Query's `onCacheEntryAdded` lifecycle to hook directly into the global Socket.IO instance. When the backend emits `STOCK_UPDATED` or `PURCHASE_COMPLETED` events, the frontend patches the Redux cache directly without needing to re-fetch from the API, providing zero-lag visual updates for all connected clients.
