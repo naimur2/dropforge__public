@@ -26,7 +26,7 @@ export function initSocketServer(httpServer: HttpServer): void {
     },
   });
 
-  // Middleware for JWT authentication
+  // Middleware for JWT authentication (Optional)
   socketServer.use((socket, next) => {
     let token = socket.handshake.auth.token;
 
@@ -42,23 +42,20 @@ export function initSocketServer(httpServer: HttpServer): void {
       }
     }
 
-    if (!token) {
-      logger.warn('Socket connection rejected: No token provided');
-      return next(new Error('Authentication error'));
+    if (token) {
+      try {
+        const payload = jwt.verify(token, env.JWT_SECRET) as { userId: string };
+        socket.data.userId = payload.userId;
+      } catch (error) {
+        logger.warn('Socket token invalid, proceeding as guest');
+      }
     }
 
-    try {
-      const payload = jwt.verify(token, env.JWT_SECRET) as { userId: string };
-      socket.data.userId = payload.userId;
-      next();
-    } catch (error) {
-      logger.error('Socket connection rejected: Invalid token');
-      next(new Error('Authentication error'));
-    }
+    next();
   });
 
   socketServer.on('connection', (socket) => {
-    logger.info('Socket connected', { socketId: socket.id, userId: socket.data.userId });
+    logger.info('Socket connected', { socketId: socket.id, userId: socket.data.userId || 'guest' });
 
     // socket.io event maps use string keys — cast to accept typed handlers
     socket.on(SOCKET_EVENTS.JOIN_DROP, ((data: { dropId: string }) => {
