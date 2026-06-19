@@ -1,5 +1,7 @@
 # DropForge - High-Traffic Inventory System
 
+📺 **Demonstration**: [Watch the walkthrough here](https://www.awesomescreenshot.com/video/53768821?key=5789ce72ba4be0e7bead03aca467d9f6)
+
 DropForge is a real-time, high-traffic limited edition merch drop platform. It features atomic reservations, auto-expiring temporary inventory holds, and real-time WebSocket synchronization across all connected clients.
 
 ## Table of Contents
