@@ -166,7 +166,6 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
           options={{ action: 'reserve', size: 'invisible' }}
           onSuccess={(token: string) => setTurnstileToken(token)}
           ref={turnstileRef}
-          className="hidden"
         />
         {!isAuthenticated && canReserve ? (
           <AuthModals 

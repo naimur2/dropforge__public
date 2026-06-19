@@ -32,9 +32,10 @@ export const turnstileMiddleware = async (req: Request, res: Response, next: Nex
 
     if (!data.success) {
       logger.warn('Turnstile verification failed: Invalid token', { errorCodes: data['error-codes'] });
+      const codes = data['error-codes']?.join(', ') || 'Unknown error';
       return res.status(403).json({
         status: 'error',
-        message: 'Bot verification failed. Please refresh the page and try again.',
+        message: `Bot verification failed (${codes}). Please refresh the page and try again.`,
       });
     }
 
