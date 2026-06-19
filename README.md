@@ -2,6 +2,22 @@
 
 DropForge is a real-time, high-traffic limited edition merch drop platform. It features atomic reservations, auto-expiring temporary inventory holds, and real-time WebSocket synchronization across all connected clients.
 
+## Table of Contents
+
+- [Tech Stack](#tech-stack)
+- [How to Run the App](#how-to-run-the-app)
+  - [Prerequisites](#prerequisites)
+  - [Environment Variables](#environment-variables)
+  - [1. Database and Backend Setup](#1-database-and-backend-setup)
+  - [2. Frontend Setup](#2-frontend-setup)
+  - [3. Production Deployment (CI/CD Pipeline)](#3-production-deployment-cicd-pipeline)
+  - [3. API Documentation & Creating Drops](#3-api-documentation--creating-drops)
+- [Architecture Choices](#architecture-choices)
+  - [How is the 60-second expiration logic handled?](#how-is-the-60-second-expiration-logic-handled)
+  - [Concurrency: How are multiple users prevented from claiming the same last item?](#concurrency-how-are-multiple-users-prevented-from-claiming-the-same-last-item)
+  - [How is the app secured against Bots and DDoS attacks?](#how-is-the-app-secured-against-bots-and-ddos-attacks)
+- [Real-Time Synchronization](#real-time-synchronization)
+
 ## Tech Stack
 
 - **Frontend**: React + Vite + Tailwind CSS + shadcn/ui + Redux Toolkit (RTK Query)
