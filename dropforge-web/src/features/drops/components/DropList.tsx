@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useDebounce } from '@/hooks/useDebounce';
 
 const STATUS_OPTIONS = [
   { label: 'All', value: 'all' },
@@ -17,11 +18,13 @@ export function DropList() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
+  
+  const debouncedSearch = useDebounce(search, 500);
 
   const { data: response, isLoading, isError, error, isFetching } = useGetDropsQuery({
     page,
     limit: 12,
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     status: status || undefined,
   });
 

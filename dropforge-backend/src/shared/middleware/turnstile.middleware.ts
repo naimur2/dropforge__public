@@ -20,11 +20,6 @@ export const turnstileMiddleware = async (req: Request, res: Response, next: Nex
     const formData = new URLSearchParams();
     formData.append('secret', env.TURNSTILE_SECRET_KEY);
     formData.append('response', token);
-    
-    const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    if (ip && typeof ip === 'string') {
-      formData.append('remoteip', ip);
-    }
 
     const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',
