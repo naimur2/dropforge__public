@@ -1,0 +1,16 @@
+dropforge.naim.bd {
+    # Reverse proxy API endpoints to Node.js backend
+    handle /api/* {
+        reverse_proxy localhost:4000
+    }
+
+    # Reverse proxy WebSocket connections to Node.js backend
+    handle /socket.io/* {
+        reverse_proxy localhost:4000
+    }
+
+    # Reverse proxy all other requests to React frontend
+    handle {
+        reverse_proxy localhost:3000
+    }
+}

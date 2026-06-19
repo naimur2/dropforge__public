@@ -1,0 +1,33 @@
+# dependencies
+node_modules
+.pnp
+.pnp.js
+
+# build output
+dist
+build
+out
+
+# env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+
+# logs
+logs
+*.log
+npm-debug.log*
+
+# docker
+# os & IDE
+.DS_Store
+Thumbs.db
+.idea
+.vscode
+*.swp
+*.swo
+coverage
+.nyc_output

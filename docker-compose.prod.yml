@@ -1,0 +1,79 @@
+services:
+  # ── PostgreSQL ────────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: dropforge-postgres
+    restart: unless-stopped
+    networks:
+      - dropforge_network
+    env_file:
+      - ./dropforge-backend/.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dropforge -d dropforge"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ── Redis ─────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: dropforge-redis
+    restart: unless-stopped
+    networks:
+      - dropforge_network
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── API ───────────────────────────────────────────────────────────────────────
+  api:
+    image: ghcr.io/${GITHUB_REPOSITORY:-naimur2/dropforge}/dropforge-api:latest
+    container_name: dropforge-api
+    restart: unless-stopped
+    networks:
+      - dropforge_network
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./dropforge-backend/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ── Web (Frontend) ────────────────────────────────────────────────────────────
+  web:
+    image: ghcr.io/${GITHUB_REPOSITORY:-naimur2/dropforge}/dropforge-web:latest
+    container_name: dropforge-web
+    restart: unless-stopped
+    networks:
+      - dropforge_network
+    ports:
+      - "3000:80"
+    env_file:
+      - ./dropforge-web/.env
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  dropforge_network:
+    driver: bridge
