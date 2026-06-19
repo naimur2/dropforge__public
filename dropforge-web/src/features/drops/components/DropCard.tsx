@@ -3,7 +3,7 @@ import type { DropDto } from '@/shared/dto';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StockBadge } from './StockBadge';
-import { CalendarClock, Flame } from 'lucide-react';
+import { CalendarClock, Flame, Loader2 } from 'lucide-react';
 import { formatDistanceToNow, isFuture, differenceInSeconds } from 'date-fns';
 import { useCreateReservationMutation, useGetMyReservationsQuery } from '@/store/apis/reservations';
 import { useCreatePurchaseMutation } from '@/store/apis/purchases';
@@ -24,14 +24,17 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
   const [createReservation, { isLoading: isReserving }] = useCreateReservationMutation();
   const [createPurchase, { isLoading: isPurchasing }] = useCreatePurchaseMutation();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const [isTurnstileLoading, setIsTurnstileLoading] = useState(false);
+  const turnstileRef = useRef<TurnstileInstance>(null);
+  const isPendingRef = useRef(false);
   const { data: reservations, refetch: refetchReservations } = useGetMyReservationsQuery(undefined, { skip: !isAuthenticated });
 
   const activeReservation = reservations?.find((res) => res.dropId === drop.id && res.status === 'ACTIVE');
   const hasReserved = !!activeReservation;
 
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  const turnstileRef = useRef<TurnstileInstance>(null);
-  const [turnstileToken, setTurnstileToken] = useState<string>('');
   const [cooldown, setCooldown] = useState(false);
 
   useEffect(() => {
@@ -63,6 +66,33 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
   const isSoldOut = drop.availableStock <= 0;
   const canReserve = !isUpcoming && !isSoldOut && !hasReserved;
 
+  const submitReservation = async (token: string) => {
+    try {
+      const reservation = await createReservation({ 
+        dropId: drop.id,
+        turnstileToken: token
+      }).unwrap();
+      toast.success(`Successfully reserved ${drop.name}!`);
+      if (onReservationSuccess) {
+        onReservationSuccess(reservation.id);
+      }
+    } catch (err: any) {
+      toast.error(err?.data?.error?.message || err?.data?.message || 'Failed to reserve drop. It might be sold out.');
+    } finally {
+      setTurnstileToken('');
+      isPendingRef.current = false;
+      setIsTurnstileLoading(false);
+      turnstileRef.current?.reset();
+    }
+  };
+
+  const handleTurnstileSuccess = (token: string) => {
+    setTurnstileToken(token);
+    if (isPendingRef.current) {
+      submitReservation(token);
+    }
+  };
+
   const handleReserve = async () => {
     if (cooldown) return;
     
@@ -70,30 +100,18 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
       toast.error('Please sign in to reserve this drop.');
       return;
     }
-    
-    if (!turnstileToken) {
-      toast.error('Security check running, please wait a moment...');
-      return;
-    }
 
     setCooldown(true);
     setTimeout(() => setCooldown(false), 2000); // 2 second throttle
 
-    try {
-      const reservation = await createReservation({ 
-        dropId: drop.id,
-        turnstileToken
-      }).unwrap();
-      toast.success(`Successfully reserved ${drop.name}!`);
-      setTurnstileToken('');
-      turnstileRef.current?.reset();
-      if (onReservationSuccess) {
-        onReservationSuccess(reservation.id);
-      }
-    } catch (err: any) {
-      toast.error(err?.data?.error?.message || err?.data?.message || 'Failed to reserve drop. It might be sold out.');
-      setTurnstileToken('');
-      turnstileRef.current?.reset();
+    if (turnstileToken && !isPendingRef.current) {
+      isPendingRef.current = true;
+      setIsTurnstileLoading(true);
+      submitReservation(turnstileToken);
+    } else {
+      isPendingRef.current = true;
+      setIsTurnstileLoading(true);
+      turnstileRef.current?.execute();
     }
   };
 
@@ -168,7 +186,7 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
         <Turnstile
           siteKey={(import.meta as any).env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
           options={turnstileOptions}
-          onSuccess={setTurnstileToken}
+          onSuccess={handleTurnstileSuccess}
           ref={turnstileRef}
         />
         {!isAuthenticated && canReserve ? (
@@ -177,14 +195,23 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
             trigger={
               <Button 
                 onClick={handleReserve} 
-                disabled={isReserving} 
+                disabled={isReserving || isTurnstileLoading} 
                 className="w-full h-11 text-[14px] font-medium tracking-[0.1px] relative overflow-hidden group/btn rounded-[8px] transition-all shadow-sm active:scale-95"
                 variant="default"
               >
-                <span className="relative z-10 drop-shadow-sm flex items-center gap-2">
-                   Reserve Now <Flame className="w-4 h-4 opacity-70 group-hover/btn:opacity-100 group-hover/btn:animate-bounce" />
-                </span>
-                <div className="absolute inset-0 bg-linear-to-r from-primary/0 via-white/20 to-primary/0 -translate-x-full transition-transform duration-700 ease-in-out group-hover/btn:translate-x-full" />
+                {isReserving || isTurnstileLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    {isTurnstileLoading ? 'Securing...' : 'Reserving...'}
+                  </>
+                ) : (
+                  <>
+                    <span className="relative z-10 drop-shadow-sm flex items-center gap-2">
+                      Reserve Now <Flame className="w-4 h-4 opacity-70 group-hover/btn:opacity-100 group-hover/btn:animate-bounce" />
+                    </span>
+                    <div className="absolute inset-0 bg-linear-to-r from-primary/0 via-white/20 to-primary/0 -translate-x-full transition-transform duration-700 ease-in-out group-hover/btn:translate-x-full" />
+                  </>
+                )}
               </Button>
             } 
           />
@@ -207,13 +234,14 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
         ) : (
           <Button 
             onClick={handleReserve} 
-            disabled={!canReserve || isReserving} 
+            disabled={!canReserve || isReserving || isTurnstileLoading} 
             className="w-full h-11 text-[14px] font-medium tracking-[0.1px] relative overflow-hidden group/btn rounded-[8px] transition-all shadow-sm active:scale-95"
             variant={isUpcoming ? "secondary" : "default"}
           >
-            {isReserving ? (
+            {isReserving || isTurnstileLoading ? (
               <span className="flex items-center gap-2">
-                <Flame className="w-4 h-4 animate-spin" /> Securing...
+                <Loader2 className="w-4 h-4 animate-spin" /> 
+                {isTurnstileLoading ? 'Securing...' : 'Reserving...'}
               </span>
             ) : isUpcoming ? (
               'Coming Soon'
