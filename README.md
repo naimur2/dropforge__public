@@ -19,6 +19,31 @@ DropForge is a real-time, high-traffic limited edition merch drop platform. It f
 - Node.js 20+
 - Yarn or npm
 
+### Environment Variables
+
+Before running the application, you need to configure the environment variables for both the frontend and backend.
+
+#### Backend (`dropforge-backend/.env`)
+Create a `.env` file in the `dropforge-backend` directory based on the provided `.env.example`:
+
+```env
+PORT=4000
+NODE_ENV=development
+DATABASE_URL=postgresql://user:password@localhost:5432/dropforge
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+JWT_EXPIRES_IN=7d
+REDIS_URL=redis://localhost:6379
+CLIENT_URL=http://localhost:3000
+```
+
+#### Frontend (`dropforge-web/.env`)
+Create a `.env` file in the `dropforge-web` directory. You will need to provide the Turnstile site key for bot protection and the API URL:
+
+```env
+VITE_API_URL=http://localhost:4000
+VITE_TURNSTILE_SITE_KEY=0x4AAAAAADnqTo2z_5KGesHr
+```
+
 ### 1. Database and Backend Setup
 
 We use Docker Compose to spin up PostgreSQL, Redis, and the backend API container.
