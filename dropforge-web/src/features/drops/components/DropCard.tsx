@@ -21,7 +21,7 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
   const [createReservation, { isLoading: isReserving }] = useCreateReservationMutation();
   const [createPurchase, { isLoading: isPurchasing }] = useCreatePurchaseMutation();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
-  const { data: reservations } = useGetMyReservationsQuery(undefined, { skip: !isAuthenticated });
+  const { data: reservations, refetch: refetchReservations } = useGetMyReservationsQuery(undefined, { skip: !isAuthenticated });
 
   const activeReservation = reservations?.find((res) => res.dropId === drop.id && res.status === 'ACTIVE');
   const hasReserved = !!activeReservation;
@@ -44,11 +44,14 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
     const interval = setInterval(() => {
       const remaining = calculateRemaining();
       setTimeLeft(remaining);
-      if (remaining <= 0) clearInterval(interval);
+      if (remaining <= 0) {
+        clearInterval(interval);
+        refetchReservations();
+      }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [activeReservation]);
+  }, [activeReservation, refetchReservations]);
 
   const isUpcoming = isFuture(new Date(drop.startAt));
   const isSoldOut = drop.availableStock <= 0;

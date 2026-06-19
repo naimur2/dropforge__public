@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { useAppSelector } from '../store/hooks';
 import type { ServerToClientEvents, ClientToServerEvents } from '@shared/events';
 
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -17,43 +16,29 @@ const SocketContext = createContext<SocketContextValue>({
 
 export const useSocket = () => useContext(SocketContext);
 
-export let globalSocket: AppSocket | null = null;
+export const globalSocket: AppSocket = io((import.meta as any).env.VITE_API_URL || '', {
+  withCredentials: true,
+  transports: ['websocket'],
+});
 
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [socket, setSocket] = useState<AppSocket | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const [isConnected, setIsConnected] = useState(globalSocket.connected);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      if (socket) {
-        socket.disconnect();
-        globalSocket = null;
-        setSocket(null);
-        setIsConnected(false);
-      }
-      return;
-    }
+    const onConnect = () => setIsConnected(true);
+    const onDisconnect = () => setIsConnected(false);
 
-    const newSocket: AppSocket = io((import.meta as any).env.VITE_API_URL || '', {
-      withCredentials: true,
-      transports: ['websocket'],
-    });
-
-    newSocket.on('connect', () => setIsConnected(true));
-    newSocket.on('disconnect', () => setIsConnected(false));
-
-    globalSocket = newSocket;
-    setSocket(newSocket);
+    globalSocket.on('connect', onConnect);
+    globalSocket.on('disconnect', onDisconnect);
 
     return () => {
-      globalSocket = null;
-      newSocket.disconnect();
+      globalSocket.off('connect', onConnect);
+      globalSocket.off('disconnect', onDisconnect);
     };
-  }, [isAuthenticated]);
+  }, []);
 
   return (
-    <SocketContext.Provider value={{ socket, isConnected }}>
+    <SocketContext.Provider value={{ socket: globalSocket, isConnected }}>
       {children}
     </SocketContext.Provider>
   );
