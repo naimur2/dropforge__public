@@ -88,7 +88,7 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
         onReservationSuccess(reservation.id);
       }
     } catch (err: any) {
-      toast.error(err?.data?.message || 'Failed to reserve drop. It might be sold out.');
+      toast.error(err?.data?.error?.message || err?.data?.message || 'Failed to reserve drop. It might be sold out.');
       turnstileRef.current?.reset();
     }
   };

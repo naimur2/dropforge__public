@@ -59,7 +59,7 @@ export function AuthModals({ defaultMode = 'login', trigger }: AuthModalsProps) 
       setOpen(false);
       reset();
     } catch (err: any) {
-      toast.error(err?.data?.message || 'Authentication failed. Please try again.');
+      toast.error(err?.data?.error?.message || err?.data?.message || 'Authentication failed. Please try again.');
     }
   };
 
