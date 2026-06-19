@@ -27,6 +27,7 @@ export const createDropSchema = z.object({
 
 export const createReservationSchema = z.object({
   dropId: z.string().uuid('Invalid drop ID'),
+  turnstileToken: z.string().min(1, 'Bot verification token is required'),
 });
 
 export const createPurchaseSchema = z.object({

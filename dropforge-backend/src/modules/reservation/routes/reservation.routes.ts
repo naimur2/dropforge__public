@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { ReservationController } from '@modules/reservation/controllers/reservation.controller';
 import { validate } from '@middleware/validate.middleware';
 import { authMiddleware } from '@middleware/auth.middleware';
+import { rateLimiter } from '@middleware/rateLimiter.middleware';
+import { turnstileMiddleware } from '@middleware/turnstile.middleware';
 import { createReservationSchema } from '@contracts/schemas';
 
 const router = Router();
@@ -28,8 +30,18 @@ router.use(authMiddleware);
  *         description: Reservation created (60 second window)
  *       409:
  *         description: No stock available or already reserved
+ *       429:
+ *         description: Too many requests
+ *       403:
+ *         description: Bot verification failed
  */
-router.post('/', validate({ body: createReservationSchema }), controller.create);
+router.post(
+  '/',
+  rateLimiter({ limit: 10, windowSeconds: 60 }),
+  turnstileMiddleware,
+  validate({ body: createReservationSchema }),
+  controller.create
+);
 
 /**
  * @swagger

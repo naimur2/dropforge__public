@@ -58,6 +58,7 @@ export interface ReservationDto {
 
 export interface CreateReservationDto {
   dropId: string;
+  turnstileToken: string;
 }
 
 export interface PurchaseDto {

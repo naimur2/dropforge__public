@@ -10,7 +10,8 @@ import { useCreatePurchaseMutation } from '@/store/apis/purchases';
 import { toast } from 'sonner';
 import { useAppSelector } from '@/store/hooks';
 import { AuthModals } from '@/features/auth/components/AuthModals';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile';
 
 interface DropCardProps {
   drop: DropDto;
@@ -27,6 +28,9 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
   const hasReserved = !!activeReservation;
 
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string>('');
+  const [cooldown, setCooldown] = useState(false);
 
   useEffect(() => {
     if (!activeReservation) {
@@ -58,19 +62,34 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
   const canReserve = !isUpcoming && !isSoldOut && !hasReserved;
 
   const handleReserve = async () => {
+    if (cooldown) return;
+    
     if (!isAuthenticated) {
       toast.error('Please sign in to reserve this drop.');
       return;
     }
     
+    if (!turnstileToken) {
+      toast.error('Security check running, please wait a moment...');
+      return;
+    }
+
+    setCooldown(true);
+    setTimeout(() => setCooldown(false), 2000); // 2 second throttle
+
     try {
-      const reservation = await createReservation({ dropId: drop.id }).unwrap();
+      const reservation = await createReservation({ 
+        dropId: drop.id,
+        turnstileToken
+      }).unwrap();
       toast.success(`Successfully reserved ${drop.name}!`);
+      turnstileRef.current?.reset();
       if (onReservationSuccess) {
         onReservationSuccess(reservation.id);
       }
     } catch (err: any) {
       toast.error(err?.data?.message || 'Failed to reserve drop. It might be sold out.');
+      turnstileRef.current?.reset();
     }
   };
 
@@ -142,6 +161,13 @@ export function DropCard({ drop, onReservationSuccess }: DropCardProps) {
       </CardContent>
 
       <CardFooter className="px-4 pb-4 pt-5 mt-auto relative z-20">
+        <Turnstile
+          siteKey={(import.meta as any).env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+          options={{ action: 'reserve', size: 'invisible' }}
+          onSuccess={(token: string) => setTurnstileToken(token)}
+          ref={turnstileRef}
+          className="hidden"
+        />
         {!isAuthenticated && canReserve ? (
           <AuthModals 
             defaultMode="login" 

@@ -10,6 +10,7 @@ const envSchema = z.object({
   JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
   REDIS_URL: z.string().url('REDIS_URL must be a valid Redis connection string'),
   CLIENT_URL: z.string().url('CLIENT_URL must be a valid URL'),
+  TURNSTILE_SECRET_KEY: z.string().min(1, 'Turnstile secret key is required for bot protection'),
 });
 
 const parsed = envSchema.safeParse(process.env);
