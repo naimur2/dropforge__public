@@ -1,4 +1,5 @@
 export const SOCKET_EVENTS = {
+  DROP_CREATED: 'drop.created',
   STOCK_UPDATED: 'stock.updated',
   RESERVATION_CREATED: 'reservation.created',
   RESERVATION_EXPIRED: 'reservation.expired',

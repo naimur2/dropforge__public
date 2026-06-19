@@ -6,6 +6,8 @@ export const API_PREFIX = `/api/${API_VERSION}`;
 // Re-exported here so both frontend and backend can import from @contracts/constants
 
 export const SOCKET_EVENTS = {
+  // Drop events
+  DROP_CREATED: 'drop.created',
   // Server → Client
   STOCK_UPDATED: 'stock.updated',
   RESERVATION_CREATED: 'reservation.created',

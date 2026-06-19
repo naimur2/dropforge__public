@@ -2,6 +2,8 @@ import { DropRepository } from '@modules/drop/repositories/drop.repository';
 import { DropMapper } from '@modules/drop/mappers/drop.mapper';
 import { NotFoundException } from '@exceptions/index';
 import type { DropDto, CreateDropDto } from '@contracts/dto';
+import { socketServer } from '@websocket/socket.server';
+import { SOCKET_EVENTS } from '@contracts/constants';
 
 export class DropService {
   private dropRepository: DropRepository;
@@ -36,7 +38,9 @@ export class DropService {
       availableStock: dto.totalStock,
       startAt: new Date(dto.startAt),
     });
-    return DropMapper.toDto(drop);
+    const resultDto = DropMapper.toDto(drop);
+    socketServer.emit(SOCKET_EVENTS.DROP_CREATED, resultDto);
+    return resultDto;
   }
 
   async update(id: string, dto: Partial<CreateDropDto>): Promise<DropDto> {

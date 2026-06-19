@@ -47,6 +47,21 @@ export const dropsApi = apiSlice.injectEndpoints({
 
           if (!globalSocket) return;
 
+          const onDropCreated = (data: any) => {
+            if (!_arg?.page || _arg.page === 1) {
+              updateCachedData((draft) => {
+                // Check if it already exists just in case
+                if (!draft.data.some((d) => d.id === data.id)) {
+                  draft.data.unshift(data);
+                  const limit = _arg?.limit || 12;
+                  if (draft.data.length > limit) {
+                    draft.data.pop();
+                  }
+                }
+              });
+            }
+          };
+
           const onStockUpdated = (data: any) => {
             updateCachedData((draft) => {
               const drop = draft.data.find((d) => d.id === data.dropId);
@@ -65,11 +80,13 @@ export const dropsApi = apiSlice.injectEndpoints({
             });
           };
 
+          globalSocket.on(SOCKET_EVENTS.DROP_CREATED, onDropCreated);
           globalSocket.on(SOCKET_EVENTS.STOCK_UPDATED, onStockUpdated);
           globalSocket.on(SOCKET_EVENTS.PURCHASE_COMPLETED, onPurchaseCompleted);
 
           await cacheEntryRemoved;
 
+          globalSocket.off(SOCKET_EVENTS.DROP_CREATED, onDropCreated);
           globalSocket.off(SOCKET_EVENTS.STOCK_UPDATED, onStockUpdated);
           globalSocket.off(SOCKET_EVENTS.PURCHASE_COMPLETED, onPurchaseCompleted);
         } catch {
