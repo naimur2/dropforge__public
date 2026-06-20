@@ -42,6 +42,7 @@ DropForge is a real-time, high-traffic limited edition merch drop platform. It f
 Before running the application, you need to configure the environment variables for both the frontend and backend.
 
 #### Backend (`dropforge-backend/.env`)
+
 Create a `.env` file in the `dropforge-backend` directory based on the provided `.env.example`:
 
 ```env
@@ -55,6 +56,7 @@ CLIENT_URL=http://localhost:3000
 ```
 
 #### Frontend (`dropforge-web/.env`)
+
 Create a `.env` file in the `dropforge-web` directory. You will need to provide the Turnstile site key for bot protection and the API URL:
 
 ```env
