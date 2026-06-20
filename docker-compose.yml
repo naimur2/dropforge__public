@@ -42,6 +42,7 @@ services:
     build:
       context: ./dropforge-backend
       dockerfile: Dockerfile
+    image: dropforge-api:latest
     container_name: dropforge-api
     restart: unless-stopped
     networks:
@@ -61,6 +62,7 @@ services:
     build:
       context: ./dropforge-web
       dockerfile: Dockerfile
+    image: dropforge-web:latest
     container_name: dropforge-web
     restart: unless-stopped
     networks:
